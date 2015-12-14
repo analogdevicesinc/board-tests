@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+#
+# Outputs the frequency of a given wav file rounded to the nearest integer.
+# Requires scipy and numpy on python3.
+#
+# Usage: wav_tone_freq /path/to/wav/file [seconds to discard]
+#
+# The first argument should be the path to a wav file and the second argument
+# is optional and relates to how many seconds should be dropped from the end of
+# the file when determining the frequency (mostly as a workaround to chop off
+# recorded silence).
+
+import os
+import sys
+
+import numpy as np
+from scipy.io import wavfile
+
+if __name__ == '__main__':
+    wav_file = sys.argv[1]
+    if not os.path.exists(wav_file):
+        raise RuntimeError("wav file doesn't exist: %r" % (wav_file,))
+
+    # seconds to discard from the end
+    if len(sys.argv) >= 3:
+        discard = int(sys.argv[2])
+
+    rate, data = wavfile.read(wav_file)
+    w = np.fft.fft(data[:discard*rate])
+    freqs = np.fft.fftfreq(len(w))
+    idx = np.argmax(np.abs(w))
+    freq = freqs[idx]
+    freqHz = abs(freq * rate)
+    print(int(freqHz))

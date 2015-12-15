@@ -37,6 +37,10 @@ Audio_test() {
 
 	# fix levels for output/input
 	alsactl restore -f adau1761.state &>/dev/null
+	if [[ $? -ne 0 ]]; then
+		echo "Failed restoring alsa device state"
+		return 1
+	fi
 
 	AUDIODEV=plughw:CARD=ADAU1761,DEV=0
 	fifo=$(mktemp --suffix=.fifo)

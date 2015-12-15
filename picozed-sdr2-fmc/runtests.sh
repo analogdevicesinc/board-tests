@@ -42,7 +42,7 @@ Audio_test() {
 		return 1
 	fi
 
-	AUDIODEV=plughw:CARD=ADAU1761,DEV=0
+	export AUDIODEV=plughw:CARD=ADAU1761,DEV=0
 	fifo=$(mktemp --suffix=.fifo)
 	rm -f "${fifo}" && mkfifo "${fifo}"
 	audio_tmp1=$(mktemp --suffix=tmp1.wav)

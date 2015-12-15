@@ -36,7 +36,7 @@ Audio_test() {
 	local ret1=0 ret2=0
 
 	# fix levels for output/input
-	alsactl restore -f adau1761.state &>/dev/null
+	alsactl restore -c 1 -f adau1761.state &>/dev/null
 	if [[ $? -ne 0 ]]; then
 		echo "Failed restoring alsa device state"
 		return 1
@@ -79,7 +79,7 @@ Audio_test() {
 	# clean up
 	rm -f "${fifo}" "${audio_tmp1}" "${audio_tmp2}"
 	# restore levels for output/input
-	alsactl restore -f adau1761.state &>/dev/null
+	alsactl restore -c 1 -f adau1761.state &>/dev/null
 
 	return $(( ret1 + ret2 ))
 }

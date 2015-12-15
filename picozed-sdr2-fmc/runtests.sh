@@ -23,6 +23,12 @@ SFP_test() {
 	return $(./loopback sfp)
 }
 
+Display_test() {
+	# requires xrandr
+	export DISPLAY=":0.0" XAUTHORITY="/var/run/lightdm/root/:0"
+	[[ -n $(xrandr | grep '^HDMI-0 connected') ]]
+}
+
 Audio_test() {
 	# requires sox and scipy/numpy for python3
 	local AUDIODEV fifo audio_tmp1 audio_tmp2

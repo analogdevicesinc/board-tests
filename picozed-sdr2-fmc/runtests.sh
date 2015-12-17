@@ -7,22 +7,6 @@
 
 LED_PATH="/sys/class/leds/led*"
 
-Camera_test() {
-	return $(./loopback cam)
-}
-
-FMC_test() {
-	return $(./loopback fmc)
-}
-
-PMOD_test() {
-	return $(./loopback pmod)
-}
-
-SFP_test() {
-	return $(./loopback sfp)
-}
-
 Display_test() {
 	# requires xrandr
 	export DISPLAY=":0.0" XAUTHORITY="/var/run/lightdm/root/:0"

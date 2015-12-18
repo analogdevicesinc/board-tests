@@ -164,4 +164,4 @@ else
 fi
 
 read -p "Press [Enter] key to shutdown..."
-/bin/shutdown -h now
+/sbin/shutdown -h now

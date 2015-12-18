@@ -127,7 +127,7 @@ Ethernet_test() {
 #}
 
 ret=0
-tests=$(compgen -A function | grep '_test$')
+tests=$(compgen -A function | grep '_test$' | sort -r)
 
 pushd "$(dirname $(readlink -f "${0}"))" >/dev/null
 # run all test functions

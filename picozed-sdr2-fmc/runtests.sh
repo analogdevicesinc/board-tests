@@ -160,4 +160,5 @@ else
 	done
 fi
 
-exit ${ret}
+read -p "Press [Enter] key to shutdown..."
+/bin/shutdown -h now

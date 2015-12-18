@@ -131,6 +131,8 @@ tests=$(compgen -A function | grep '_test$')
 
 pushd "$(dirname $(readlink -f "${0}"))" >/dev/null
 # run all test functions
+echo "PicoZed SDR2 FMC CC test suite"
+echo "=============================="
 for test_func in ${tests[@]}; do
 	test_name=${test_func//_/ }
 	echo -n "RUNNING: ${test_name} "

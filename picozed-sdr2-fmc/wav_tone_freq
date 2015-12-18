@@ -25,7 +25,13 @@ if __name__ == '__main__':
     if len(sys.argv) >= 3:
         discard = int(sys.argv[2])
 
-    rate, data = wavfile.read(wav_file)
+    try:
+        rate, data = wavfile.read(wav_file)
+    except ValueError as e:
+        # wav file doesn't exist/isn't a wav file
+        print('Error: %s'.format(e), file=sys.stderr)
+        print(0)
+
     w = np.fft.fft(data[:discard*rate])
     freqs = np.fft.fftfreq(len(w))
     idx = np.argmax(np.abs(w))

@@ -119,12 +119,12 @@ Ethernet_test() {
 	return ${ret}
 }
 
-button_test() {
-	# TODO: interactive button testing
-	# export gpios
-	true
-	# unexport gpios
-}
+#button_test() {
+#	# TODO: interactive button testing
+#	# export gpios
+#	true
+#	# unexport gpios
+#}
 
 ret=0
 tests=$(compgen -A function | grep '_test$')

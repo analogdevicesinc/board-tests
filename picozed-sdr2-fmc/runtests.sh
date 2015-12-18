@@ -146,6 +146,7 @@ for test_func in ${tests[@]}; do
 done
 popd >/dev/null
 
+echo "=============================="
 # determine if any test functions failed
 if [[ ${ret} -eq 0 ]]; then
 	echo "ALL TESTS PASSED"

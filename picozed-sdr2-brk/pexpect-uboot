@@ -151,16 +151,9 @@ def get_mac_addr():
     return mac_addr
 
 
-def spawn_picocom():
-    # UART and GPIB usb serial device paths
+def spawn_picocom(serial_dev):
     try:
-        uart_dev = glob.glob(UART)[0]
-        gpib_dev = glob.glob(GPIB)[0]
-    except IndexError:
-        raise SerialError('UART and/or GPIB serial device nodes missing, make sure cables are plugged in and devices are powered on')
-
-    try:
-        p = pexpect.spawnu('picocom --nolock -b 115200 %s' % (uart_dev,))
+        p = pexpect.spawnu('picocom --nolock -b 115200 %s' % (serial_dev,))
     except pexpect.exceptions.ExceptionPexpect:
         raise SerialError('picocom is missing, please install it')
 
@@ -168,7 +161,7 @@ def spawn_picocom():
     p.logfile = sys.stdout
     p.setecho(False)
 
-    return p, uart_dev, gpib_dev
+    return p
 
 
 def uboot_expect():
@@ -229,8 +222,15 @@ def uboot_expect():
 
     while 1:
         try:
+            # determine UART and GPIB usb serial device paths
+            try:
+                uart_dev = glob.glob(UART)[0]
+                gpib_dev = glob.glob(GPIB)[0]
+            except IndexError:
+                raise SerialError('UART and/or GPIB serial device nodes missing, make sure cables are plugged in and devices are powered on')
+
             if not spawned:
-                p, uart_dev, gpib_dev = spawn_picocom()
+                p = spawn_picocom(uart_dev)
                 spawned = True
             if not timed_out:
                 p.expect('Terminal ready')

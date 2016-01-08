@@ -2,8 +2,8 @@
 #
 # Test suite for the PicoZed SDR2 FMC board.
 #
-# To add more tests, add new functions with names ending in "_test" and they
-# will get automatically run.
+# To add more tests, create new functions with names ending in "_test" and they
+# will get automatically run in alphabetical order.
 
 LED_PATH="/sys/class/leds/led*"
 
@@ -14,7 +14,7 @@ Display_test() {
 }
 
 Audio_test() {
-	# requires sox and scipy/numpy for python3
+	# requires sox, alsa-utils, and scipy/numpy for python3
 	local AUDIODEV fifo audio_tmp1 audio_tmp2
 	local FREQ=500 freq1 freq2 freq1diff freq2diff
 	local ret1=0 ret2=0

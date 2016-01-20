@@ -7,12 +7,15 @@
 
 LED_PATH="/sys/class/leds/led*"
 
+# Check if a monitor is connected via the HDMI port.
 Display_test() {
 	# requires xrandr
 	export DISPLAY=":0.0" XAUTHORITY="/var/run/lightdm/root/:0"
 	[[ -n $(xrandr | grep '^HDMI-0 connected') ]]
 }
 
+# Pushes a tone (500 Hz) from the output jack, records the tone, and verifies
+# the frequency of the recorded tone matches.
 Audio_test() {
 	# requires sox, alsa-utils, and scipy/numpy for python3
 	local AUDIODEV fifo audio_tmp1 audio_tmp2
@@ -68,6 +71,8 @@ Audio_test() {
 	return $(( ret1 + ret2 ))
 }
 
+# Create a file of random data and copy it to a connected USB drive. Then copy
+# it back from the USB device and make sure the files match.
 USB_test() {
 	local ret tmpfile tmpfile2 filename chksum new_chksum
 
@@ -94,6 +99,8 @@ USB_test() {
 	return ${ret}
 }
 
+# Perform a loopbacked network ping between both jacks using network namespaces
+# to isolate the interfaces from each other to force the ping over the wire.
 Ethernet_test() {
 	# requires network namespace support enabled in the kernel and an Ethernet
 	# cable connecting both jacks

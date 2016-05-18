@@ -1,0 +1,22 @@
+Support files for running shock and vibration tests.
+
+In order to create an SD card that autoruns the testsuite at startup perform
+the following steps on an SD card with the ADI image on it:
+
+  - Patch the devicetree to export the AXI_GPREG memory range.
+  	(see zynq-picozed-sdr1-brk.dts.patch)
+
+  - Patch osc to support running tests in Xvfb on the command line.
+  	(see osc-cli-test.patch)
+
+  - Copy loopback.c and test_pzsdr_vibration.sh to /root.
+
+  - Compile loopback.c in /root
+    (gcc loopback.c -o loopback)
+
+  - Add a call to /root/test_pzsdr_vibration.sh right before the exit line in
+	/etc/rc.local.
+
+On reboot, the script should run the loopback tests and then the osc tests in
+succession, over and over again, sending log output to /root/log.txt until a
+failure occurs. On failure, the LEDs should be flashing.

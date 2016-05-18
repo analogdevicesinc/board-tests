@@ -1,0 +1,16 @@
+Export axi_gpreg memory range via uio.
+
+--- zynq-picozed-sdr2-brk.dts
++++ zynq-picozed-sdr2-brk.dts
+@@ -7,6 +7,11 @@
+ 	interrupt-parent = <0x1>;
+ 	model = "Avnet ZYNQ PicoZed SDR2 (Z7035/AD9361)";
+ 
++	loopback@41200000 {
++		compatible = "dmem-uio";
++		reg = <0x41200000 0x10000>;
++	};
++
+ 	chosen {
+ 		linux,stdout-path = "/amba@0/uart@E0001000";
+ 	};

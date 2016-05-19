@@ -76,7 +76,7 @@ int main()
 	}
 
 	/* walking 1 */
-	for(n = 0; n < 27; n++) {
+	for(n = 0; n < 32; n++) {
 		wdata = 1 << n;
 		gpio_write(wdata);
 		gpio_wait();
@@ -85,7 +85,7 @@ int main()
 	}
 
 	/* walking 0 */
-	for(n = 0; n < 27; n++) {
+	for(n = 0; n < 32; n++) {
 		wdata = 1 << n;
 		wdata = ~wdata;
 		gpio_write(wdata);

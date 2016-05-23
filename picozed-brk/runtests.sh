@@ -38,7 +38,8 @@ USB_test() {
 # Set interface speed to 100Mb/s so loopback cables work and check for a link.
 Ethernet_test() {
 	ethtool -s eth0 speed 100 duplex full autoneg off
-	link=$(ethtool eth0 | grep Link)
+	sleep 3
+	local link=$(ethtool eth0 | grep Link)
 	[[ ${link//*: /} == yes ]]
 }
 
@@ -54,7 +55,7 @@ tests=$(compgen -A function | grep '_test$' | sort -r)
 
 pushd "$(dirname $(readlink -f "${0}"))" >/dev/null
 # run all test functions
-echo "PicoZed brk test suite"
+echo "PicoZed breakout test suite"
 echo "=============================="
 for test_func in ${tests[@]}; do
 	test_name=${test_func//_/ }

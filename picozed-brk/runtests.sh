@@ -66,23 +66,22 @@ button_test() {
 	exec 3< <(evtest /dev/input/event0)
 	local PID=$!
 
+	# Blink corresponding LEDs per button press and keep track of which buttons
+	# have triggered.
 	local -a key_test=(0 0 0 0)
 	local line
 	while read -r line; do
 		if [[ ${line} == "Event: "*" code 105 "* ]]; then
-			key_test[0]=1	
+			key_test[0]=1
 			echo 1 > "${LEDS[0]}"/shot
-		fi
-		if [[ ${line} == "Event: "*" code 106 "* ]]; then
-			key_test[1]=1	
+		elif [[ ${line} == "Event: "*" code 106 "* ]]; then
+			key_test[1]=1
 			echo 1 > "${LEDS[1]}"/shot
-		fi
-		if [[ ${line} == "Event: "*" code 103 "* ]]; then
-			key_test[2]=1	
+		elif [[ ${line} == "Event: "*" code 103 "* ]]; then
+			key_test[2]=1
 			echo 1 > "${LEDS[2]}"/shot
-		fi
-		if [[ ${line} == "Event: "*" code 108 "* ]]; then
-			key_test[3]=1	
+		elif [[ ${line} == "Event: "*" code 108 "* ]]; then
+			key_test[3]=1
 			echo 1 > "${LEDS[3]}"/shot
 		fi
 		if [[ -z ${key_test[@]//1/} ]]; then

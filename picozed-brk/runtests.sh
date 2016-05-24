@@ -5,7 +5,7 @@
 # To add more tests, create new functions with names ending in "_test" and they
 # will get automatically run in alphabetical order.
 
-LED_PATH="/sys/class/leds/led*"
+LEDS=( /sys/class/leds/led* )
 
 # Create a file of random data and copy it to a connected USB drive. Then copy
 # it back from the USB device and make sure the files match.
@@ -43,12 +43,65 @@ Ethernet_test() {
 	[[ ${link//*: /} == yes ]]
 }
 
-#button_test() {
-#	# TODO: interactive button testing
-#	# export gpios
-#	true
-#	# unexport gpios
-#}
+evtest_done() {
+	exec 3<&-
+	kill -s SIGINT ${PID}
+}
+
+# Check push buttons and switches for event triggering, requires evtest to be
+# installed.
+button_test() {
+	[[ -e /dev/input/event0 ]] || return 1
+	local ret
+
+	echo -e "\nToggle the buttons and switches on the board and watch for corresponding LED blinks."
+	echo "Hit Ctrl-C when done if necessary."
+
+	for led in "${LEDS[@]}"; do
+		echo oneshot > "${led}"/trigger
+		echo 1 > "${led}"/invert
+	done
+
+	trap evtest_done SIGINT
+	exec 3< <(evtest /dev/input/event0)
+	local PID=$!
+
+	local -a key_test=(0 0 0 0)
+	local line
+	while read -r line; do
+		if [[ ${line} == "Event: "*" code 105 "* ]]; then
+			key_test[0]=1	
+			echo 1 > "${LEDS[0]}"/shot
+		fi
+		if [[ ${line} == "Event: "*" code 106 "* ]]; then
+			key_test[1]=1	
+			echo 1 > "${LEDS[1]}"/shot
+		fi
+		if [[ ${line} == "Event: "*" code 103 "* ]]; then
+			key_test[2]=1	
+			echo 1 > "${LEDS[2]}"/shot
+		fi
+		if [[ ${line} == "Event: "*" code 108 "* ]]; then
+			key_test[3]=1	
+			echo 1 > "${LEDS[3]}"/shot
+		fi
+		if [[ -z ${key_test[@]//1/} ]]; then
+			# all keys are working, stopping the loop
+			sleep 1
+			evtest_done
+			break
+		fi
+	done <&3
+
+	for led in "${LEDS[@]}"; do
+		echo 0 > "${led}"/invert
+		echo none > "${led}"/trigger
+	done
+
+	trap - SIGINT
+	[[ -n ${key_test[@]//1/} ]] && return 1
+	return 0
+}
 
 ret=0
 tests=$(compgen -A function | grep '_test$' | sort -r)
@@ -75,14 +128,14 @@ echo "=============================="
 if [[ ${ret} -eq 0 ]]; then
 	echo "ALL TESTS PASSED"
 	# solid LEDs for passing test suite
-	for led in ${LED_PATH}; do
+	for led in "${LEDS[@]}"; do
 		echo none > "${led}"/trigger
 		echo 100 > "${led}"/brightness
 	done
 else
 	echo "TEST(S) FAILED"
 	# flashing LEDs for failing test suite
-	for led in ${LED_PATH}; do
+	for led in "${LEDS[@]}"; do
 		echo heartbeat > "${led}"/trigger
 	done
 fi

@@ -73,28 +73,28 @@ button_test() {
 	# keeping track of which buttons have triggered.
 	local line
 	while read -r line; do
-		if [[ ${line} == "Event: "*" code 105 "* ]]; then
+		if [[ ${line} == "Event: "*" type 1 (EV_KEY), code 105 "* ]]; then
 			pb_test[0]=1
 			echo 1 > "${LEDS[0]}"/shot
-		elif [[ ${line} == "Event: "*" code 106 "* ]]; then
+		elif [[ ${line} == "Event: "*" type 1 (EV_KEY), code 106 "* ]]; then
 			pb_test[1]=1
 			echo 1 > "${LEDS[1]}"/shot
-		elif [[ ${line} == "Event: "*" code 103 "* ]]; then
+		elif [[ ${line} == "Event: "*" type 1 (EV_KEY), code 103 "* ]]; then
 			pb_test[2]=1
 			echo 1 > "${LEDS[2]}"/shot
-		elif [[ ${line} == "Event: "*" code 108 "* ]]; then
+		elif [[ ${line} == "Event: "*" type 1 (EV_KEY), code 108 "* ]]; then
 			pb_test[3]=1
 			echo 1 > "${LEDS[3]}"/shot
-		elif [[ ${line} == "Event: "*" code 59 "* ]]; then
+		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 0 "* ]]; then
 			sw_test[0]=1
 			echo 1 > "${LEDS[0]}"/shot
-		elif [[ ${line} == "Event: "*" code 60 "* ]]; then
+		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 1 "* ]]; then
 			sw_test[1]=1
 			echo 1 > "${LEDS[1]}"/shot
-		elif [[ ${line} == "Event: "*" code 61 "* ]]; then
+		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 2 "* ]]; then
 			sw_test[2]=1
 			echo 1 > "${LEDS[2]}"/shot
-		elif [[ ${line} == "Event: "*" code 62 "* ]]; then
+		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 3 "* ]]; then
 			sw_test[3]=1
 			echo 1 > "${LEDS[3]}"/shot
 		fi

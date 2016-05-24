@@ -66,26 +66,40 @@ button_test() {
 	exec 3< <(evtest /dev/input/event0)
 	local PID=$!
 
-	# Blink corresponding LEDs per button press and keep track of which buttons
-	# have triggered.
-	local -a key_test=(0 0 0 0)
+	local -a pb_test=(0 0 0 0)
+	local -a sw_test=(0 0 0 0)
+
+	# Hacky method of blinking corresponding LEDs per button press and while
+	# keeping track of which buttons have triggered.
 	local line
 	while read -r line; do
 		if [[ ${line} == "Event: "*" code 105 "* ]]; then
-			key_test[0]=1
+			pb_test[0]=1
 			echo 1 > "${LEDS[0]}"/shot
 		elif [[ ${line} == "Event: "*" code 106 "* ]]; then
-			key_test[1]=1
+			pb_test[1]=1
 			echo 1 > "${LEDS[1]}"/shot
 		elif [[ ${line} == "Event: "*" code 103 "* ]]; then
-			key_test[2]=1
+			pb_test[2]=1
 			echo 1 > "${LEDS[2]}"/shot
 		elif [[ ${line} == "Event: "*" code 108 "* ]]; then
-			key_test[3]=1
+			pb_test[3]=1
+			echo 1 > "${LEDS[3]}"/shot
+		elif [[ ${line} == "Event: "*" code 59 "* ]]; then
+			sw_test[0]=1
+			echo 1 > "${LEDS[0]}"/shot
+		elif [[ ${line} == "Event: "*" code 60 "* ]]; then
+			sw_test[1]=1
+			echo 1 > "${LEDS[1]}"/shot
+		elif [[ ${line} == "Event: "*" code 61 "* ]]; then
+			sw_test[2]=1
+			echo 1 > "${LEDS[2]}"/shot
+		elif [[ ${line} == "Event: "*" code 62 "* ]]; then
+			sw_test[3]=1
 			echo 1 > "${LEDS[3]}"/shot
 		fi
-		if [[ -z ${key_test[@]//1/} ]]; then
-			# all keys are working, stopping the loop
+		if [[ -z ${pb_test[@]//1/} && -z ${sw_test[@]//1/} ]]; then
+			# all keys/switches are working, stopping the loop
 			sleep 1
 			evtest_done
 			break
@@ -98,7 +112,7 @@ button_test() {
 	done
 
 	trap - SIGINT
-	[[ -n ${key_test[@]//1/} ]] && return 1
+	[[ -n ${pb_test[@]//1/} || -n ${sw_test[@]//1/} ]] && return 1
 	return 0
 }
 

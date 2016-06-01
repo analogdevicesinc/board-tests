@@ -39,8 +39,9 @@ USB_test() {
 Ethernet_test() {
 	ethtool -s eth0 speed 100 duplex full autoneg off
 	sleep 3
-	local link=$(ethtool eth0 | grep Link)
-	[[ ${link//*: /} == yes ]]
+	local carrier=$(</sys/class/net/eth0/carrier)
+	[[ ${carrier} == 1 ]] && return 0
+	return 1
 }
 
 evtest_done() {

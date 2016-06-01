@@ -7,9 +7,9 @@ the following steps on an SD card with the ADI image on it:
     (sudo apt-get install evtest)
 
   - Make sure a new enough devicetree is being used that maps all the buttons
-	and switches to separate events.
+    and switches to separate events.
 
   - Copy runtests.sh to /root.
 
-  - Add /root/.bash_login file that calls /root/runtests.sh so the tests get
-	run at login time on the terminal.
+  - After boot up, connect to the device over UART and run ./runtests.sh from
+    the command line.

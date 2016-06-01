@@ -10,7 +10,7 @@ LEDS=( /sys/class/leds/led* )
 # Create a file of random data and copy it to a connected USB drive. Then copy
 # it back from the USB device and make sure the files match.
 USB_test() {
-	local ret tmpfile tmpfile2 filename chksum new_chksum
+	local tmpfile tmpfile2 filename chksum new_chksum
 
 	[[ -e /dev/sda ]] || return 1
 
@@ -31,8 +31,8 @@ USB_test() {
 	new_chksum=$(md5sum "${tmpfile2}" | cut -d' ' -f1)
 	rm -f "${tmpfile}" "${tmpfile2}"
 
-	[[ ${chksum} == ${new_chksum} ]] && ret=0 || ret=1
-	return ${ret}
+	[[ ${chksum} == ${new_chksum} ]] && return 0
+	return 1
 }
 
 # Set interface speed to 100Mb/s so loopback cables work and check for a link.

@@ -56,7 +56,7 @@ button_test() {
 	local ret
 
 	echo -e "\nToggle the buttons and switches on the board and watch for corresponding LED blinks."
-	echo "Hit Ctrl-C when done if necessary."
+	echo "Hit Ctrl-C if necessary to stop the test."
 
 	for led in "${LEDS[@]}"; do
 		echo oneshot > "${led}"/trigger

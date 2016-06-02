@@ -44,6 +44,7 @@ Ethernet_test() {
 	return 1
 }
 
+# Function called on evtest completion (or when manually SIGINT-ed).
 evtest_done() {
 	exec 3<&-
 	kill -s SIGINT ${PID}

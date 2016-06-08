@@ -53,68 +53,73 @@ evtest_done() {
 # Check push buttons and switches for event triggering, requires evtest to be
 # installed.
 button_test() {
-	[[ -e /dev/input/event0 ]] || return 1
-	local ret
-
-	echo -e "\nToggle the buttons and switches on the board and watch for corresponding LED blinks."
-	echo "Hit Ctrl-C if necessary to stop the test."
+	echo -e "\nToggle the buttons and switches on the board and watch for corresponding LED state changes."
+	echo "The test will time out after 30 seconds if everything hasn't been toggled."
 
 	for led in "${LEDS[@]}"; do
-		echo oneshot > "${led}"/trigger
-		echo 1 > "${led}"/invert
+		echo 0 > "${led}"/brightness
 	done
 
-	trap evtest_done SIGINT
-	exec 3< <(evtest /dev/input/event0)
-	local PID=$!
+	# relative gpios: 54 55 56 57 62 63 64 65
+	local -a pb_gpios=(960 961 962 963)
+	local -a sw_gpios=(968 969 970 971)
+	local -a gpios=( ${pb_gpios[@]} ${sw_gpios[@]} )
+	local -a orig_gpio_values=( "${gpios[@]}" )
+	local -a gpio_off=( "${gpios[@]}" )
+	local -a gpio_on=( "${gpios[@]}" )
+	local gpio gpio_path=/sys/class/gpio
 
-	local -a pb_test=(0 0 0 0)
-	local -a sw_test=(0 0 0 0)
+	# export gpios
+	for gpio in "${gpios[@]}"; do
+		echo ${gpio} > "${gpio_path}"/export
+		[[ $? -ne 0 ]] && return 1
+	done
+
+	# capture original GPIO state
+	local i
+	for i in "${!gpios[@]}"; do
+		orig_gpio_values[${i}]=$(<"${gpio_path}"/gpio${gpios[${i}]}/value)
+	done
+
+	local gpio_value
+	trap "break" SIGINT
+
+	# 30 seconds to finish the test before timing out.
+	sleep 30 &
+	local timer_pid=$!
 
 	# Hacky method of blinking corresponding LEDs per button press and while
-	# keeping track of which buttons have triggered.
-	local line
-	while read -r line; do
-		if [[ ${line} == "Event: "*" type 1 (EV_KEY), code 105 "* ]]; then
-			pb_test[0]=1
-			echo 1 > "${LEDS[0]}"/shot
-		elif [[ ${line} == "Event: "*" type 1 (EV_KEY), code 106 "* ]]; then
-			pb_test[1]=1
-			echo 1 > "${LEDS[1]}"/shot
-		elif [[ ${line} == "Event: "*" type 1 (EV_KEY), code 103 "* ]]; then
-			pb_test[2]=1
-			echo 1 > "${LEDS[2]}"/shot
-		elif [[ ${line} == "Event: "*" type 1 (EV_KEY), code 108 "* ]]; then
-			pb_test[3]=1
-			echo 1 > "${LEDS[3]}"/shot
-		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 0 "* ]]; then
-			sw_test[0]=1
-			echo 1 > "${LEDS[0]}"/shot
-		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 1 "* ]]; then
-			sw_test[1]=1
-			echo 1 > "${LEDS[1]}"/shot
-		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 2 "* ]]; then
-			sw_test[2]=1
-			echo 1 > "${LEDS[2]}"/shot
-		elif [[ ${line} == "Event: "*" type 5 (EV_SW), code 3 "* ]]; then
-			sw_test[3]=1
-			echo 1 > "${LEDS[3]}"/shot
-		fi
-		if [[ -z ${pb_test[@]//1/} && -z ${sw_test[@]//1/} ]]; then
-			# all keys/switches are working, stopping the loop
-			sleep 1
-			evtest_done
-			break
-		fi
-	done <&3
+	# keeping track of which have been triggered on and off.
+	while [[ -n ${gpio_off[@]//1} || -n ${gpio_on[@]//1} ]]; do
+		for i in "${!gpios[@]}"; do
+			gpio_value=$(<"${gpio_path}"/gpio${gpios[$i]}/value)
+			echo ${gpio_value} > "${LEDS[$((i % 4))]}"/brightness
+			if [[ ${gpio_value} != ${orig_gpio_values[$i]} ]]; then
+				if [[ ${gpio_value} == 1 ]]; then
+					gpio_on[$i]=1
+				else
+					gpio_off[$i]=1
+				fi
+				orig_gpio_values[$i]=${gpio_value}
+			fi
+		done
 
-	for led in "${LEDS[@]}"; do
-		echo 0 > "${led}"/invert
-		echo none > "${led}"/trigger
+		# check the timer is still running
+		kill -0 ${timer_pid} 2>/dev/null || break
+		sleep 0.1
 	done
 
 	trap - SIGINT
-	[[ -n ${pb_test[@]//1/} || -n ${sw_test[@]//1/} ]] && return 1
+
+	for gpio in "${gpios[@]}"; do
+		echo ${gpio} > /sys/class/gpio/unexport
+		[[ $? -ne 0 ]] && return 1
+	done
+	for led in "${LEDS[@]}"; do
+		echo 0 > "${led}"/brightness
+	done
+
+	[[ -n ${gpio_off[@]//1} || -n ${gpio_on[@]//1} ]] && return 1
 	return 0
 }
 

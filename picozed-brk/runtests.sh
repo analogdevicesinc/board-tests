@@ -44,14 +44,7 @@ Ethernet_test() {
 	return 1
 }
 
-# Function called on evtest completion (or when manually SIGINT-ed).
-evtest_done() {
-	exec 3<&-
-	kill -s SIGINT ${PID}
-}
-
-# Check push buttons and switches for event triggering, requires evtest to be
-# installed.
+# Check push buttons and switches for gpio triggering.
 button_test() {
 	echo -e "\nToggle the buttons and switches on the board and watch for corresponding LED state changes."
 	echo "The test will time out after 30 seconds if everything hasn't been toggled."

@@ -3,13 +3,10 @@ Breakout board specific test suite.
 In order to create an SD card that autoruns the testsuite at startup perform
 the following steps on an SD card with the ADI image on it:
 
-  - Make sure evtest is installed on the SD card.
-    (sudo apt-get install evtest)
-
-  - Make sure a new enough devicetree is being used that maps all the buttons
-    and switches to separate events.
+  - Make sure to remove all gpio_keys mappings from the device tree in order
+    to be able to export push button and switch gpios.
 
   - Copy runtests.sh to /root.
 
-  - After boot up, connect to the device over UART and run ./runtests.sh from
-    the command line.
+  - Add a call to /root/runtests.sh in /etc/rc.local to run the test suite
+    automatically on boot.

@@ -47,7 +47,7 @@ Ethernet_test() {
 # Check push buttons and switches for gpio triggering.
 button_test() {
 	echo -e "\nToggle the buttons and switches on the board and watch for corresponding LED state changes."
-	echo "The test will time out after 30 seconds if everything hasn't been toggled."
+	echo "The test will time out after 60 seconds if everything hasn't been toggled."
 
 	for led in "${LEDS[@]}"; do
 		echo 0 > "${led}"/brightness
@@ -77,8 +77,8 @@ button_test() {
 	local gpio_value
 	trap "break" SIGINT
 
-	# 30 seconds to finish the test before timing out.
-	sleep 30 &
+	# Wait 60 seconds to finish the test before timing out.
+	sleep 60 &
 	local timer_pid=$!
 
 	# Hacky method of blinking corresponding LEDs per button press and while

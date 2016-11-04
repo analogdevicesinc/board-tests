@@ -1,7 +1,22 @@
 Breakout board specific test suite.
 
-In order to create an SD card that autoruns the testsuite at startup perform
-the following steps on an SD card with the ADI image on it:
+To create an SD card that autoruns the u-boot-based testsuite via a remote RPi
+at startup perform the following steps on an SD card with the lite version of
+this raspian image necessary to drive the connected LCD screen [1]:
+
+  - Clone https://github.com/analogdevicesinc/board-tests.git into /home/pi.
+
+  - Add the following lines to /etc/rc.local before the "exit 0" line at the
+    end to run the test script on boot:
+
+    clear
+    /home/pi/board-tests/picozed-brk/pexpect-uboot
+
+[1]: https://learn.adafruit.com/adafruit-2-2-pitft-hat-320-240-primary-display-for-raspberry-pi/easy-install
+
+
+To create an SD card that autoruns the old linux-based testsuite at startup
+perform the following steps on an SD card with the ADI image on it:
 
   - Make sure to remove all gpio_keys mappings from the device tree in order
     to be able to export push button and switch gpios.

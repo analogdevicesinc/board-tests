@@ -129,7 +129,7 @@ def uboot_expect():
             # show button message on screen so user knows to press the buttons
             p.expect('Toggle the buttons')
             p.expect('The test will time out')
-            time.sleep(0.25)
+            time.sleep(0.5)
             print(term.on_yellow + ' ' * 160 + term.normal)
             print(term.black + term.on_yellow + BUTTON_STR.strip() + term.normal)
             print(term.on_yellow + ' ' * 160 + term.normal)
@@ -142,7 +142,7 @@ def uboot_expect():
             if i == 2:
                 # tests failed
                 p.expect('Hit any key')
-                time.sleep(0.25)
+                time.sleep(0.5)
                 print(term.on_red + ' ' * 160 + term.normal)
                 print(term.black + term.on_red + FAIL_STR.strip() + term.normal)
                 print(term.on_red + ' ' * 160 + term.normal)

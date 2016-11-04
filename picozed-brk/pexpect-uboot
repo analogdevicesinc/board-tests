@@ -148,7 +148,7 @@ def uboot_expect():
 
             # tests passed
             print(term.on_green + ' ' * 160 + term.normal)
-            print(term.black + term.on_green + pass_str.strip() + term.normal)
+            print(term.black + term.on_green + PASS_STR.strip() + term.normal)
             print(term.on_green + ' ' * 160 + term.normal)
 
         except pexpect.TIMEOUT:

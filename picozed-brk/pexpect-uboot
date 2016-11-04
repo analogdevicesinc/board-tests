@@ -1,0 +1,198 @@
+#!/usr/bin/env python2.7
+#
+# This script is used to run picozed SDR breakout board tests.
+#
+# Note that it uses python2.7 and requires blessings, pexpect, pyserial, and
+# picocom to be installed.
+
+from __future__ import unicode_literals
+
+import errno
+import glob
+import os
+import subprocess
+import sys
+import time
+
+from blessings import Terminal
+import pexpect
+import serial
+
+# serial device path
+UART = '/dev/serial/by-id/*Silicon_Labs_CP2103_USB_to_UART_Bridge_Controller_0001*'
+
+BUTTON_STR="""
+#####  #    # ##### #####  ####  #    # 
+#    # #    #   #     #   #    # ##   #
+#####  #    #   #     #   #    # # #  #
+#    # #    #   #     #   #    # #  # #
+#    # #    #   #     #   #    # #   ##
+#####   ####    #     #    ####  #    #
+"""
+
+PASS_STR="""
+######## ########   ####   ########     
+######## ########  ######  ########
+   ##    ##       ##    ##    ##
+   ##    ##       ##          ##
+   ##    ######    ######     ##
+   ##    ##             ##    ##
+   ##    ##       ##    ##    ##
+   ##    ########  ######     ##
+   ##    ########   ####      ##
+
+#######       #       ####     ####
+########     ###     ######   ######
+##     ##   ## ##   ##    ## ##    ##
+##     ##  ##   ##  ##       ##
+########  ##     ##  ######   ######
+#######   #########       ##       ##
+##        ##     ## ##    ## ##    ##
+##        ##     ##  ######   ######
+##        ##     ##   ####     ####
+"""
+
+FAIL_STR="""
+######## ########   ####   ########     
+######## ########  ######  ########
+   ##    ##       ##    ##    ##
+   ##    ##       ##          ##
+   ##    ######    ######     ##
+   ##    ##             ##    ##
+   ##    ##       ##    ##    ##
+   ##    ########  ######     ##
+   ##    ########   ####      ##
+
+########     #     #### ##
+########    ###    #### ##
+##         ## ##    ##  ##
+##        ##   ##   ##  ##
+######   ##     ##  ##  ##
+######   #########  ##  ##
+##       #########  ##  ##
+##       ##     ## #### ########
+##       ##     ## #### ########
+"""
+
+
+class SerialError(Exception):
+    """Generic exception for serial device errors."""
+
+
+class UBootError(Exception):
+    """Generic exception for errors when communicating with u-boot."""
+
+
+def spawn_picocom(serial_dev):
+    try:
+        p = pexpect.spawnu('picocom --nolock -b 115200 %s' % (serial_dev,))
+    except pexpect.exceptions.ExceptionPexpect:
+        raise SerialError('picocom is missing, please install it')
+
+    # send output to the terminal and don't reprint input commands
+    p.logfile = sys.stdout
+    p.setecho(False)
+
+    return p
+
+
+def uboot_expect():
+    """Pexpect loop to run after the tests complete successfully."""
+
+    spawned = False
+    timed_out = False
+    reset = False
+    warning = False
+
+    # output string specifying that the u-boot command line is ready
+    prompt = 'zynq-uboot> '
+
+    # terminal object used for coloring output
+    term = Terminal()
+
+    while 1:
+        try:
+            # determine UART serial device path
+            try:
+                uart_dev = glob.glob(UART)[0]
+            except IndexError:
+                raise SerialError('UART serial device node missing, make sure cable is plugged in and devices are powered on')
+
+            if not spawned:
+                p = spawn_picocom(uart_dev)
+                spawned = True
+            if not timed_out or reset:
+                # terminal was reset or board was powercycled
+                i = p.expect(['Terminal ready', 'U-Boot '])
+
+            reset = False
+            # show button message on screen so user knows to press the buttons
+            p.expect('Toggle the buttons')
+            p.expect('The test will time out')
+            print(term.on_yellow + ' ' * 160 + term.normal)
+            print(term.black + term.on_yellow + BUTTON_STR.strip() + term.normal)
+            print(term.on_yellow + ' ' * 160 + term.normal)
+
+            i = p.expect(['U-Boot ', 'ALL TESTS PASSED', 'TESTS FAILED'], timeout=1800)
+            if i == 0:
+                # board was reset
+                reset = True
+                continue
+            if i == 2:
+                # tests failed
+                p.expect('Hit any key')
+                print(term.on_red + ' ' * 160 + term.normal)
+                print(term.black + term.on_red + FAIL_STR.strip() + term.normal)
+                print(term.on_red + ' ' * 160 + term.normal)
+                continue
+
+            # tests passed
+            print(term.on_green + ' ' * 160 + term.normal)
+            print(term.black + term.on_green + pass_str.strip() + term.normal)
+            print(term.on_green + ' ' * 160 + term.normal)
+
+        except pexpect.TIMEOUT:
+            if not timed_out:
+                print('\nTimed out waiting for u-boot output, restarting loop...')
+            timed_out = True
+            continue
+        except KeyboardInterrupt:
+            # restart the expect loop if the user hits Ctrl-C
+            print('Got keyboard interrupt, restarting loop...')
+            timed_out = True
+            continue
+        except pexpect.EOF as e:
+            if spawned:
+                print('\nSerial device closed, restarting loop...')
+                spawned = False
+            time.sleep(1)
+            continue
+        except SerialError as e:
+            if not warning:
+                print(e)
+                warning = True
+            time.sleep(1)
+            continue
+        except UBootError as e:
+            print('\nError running U-Boot command: %s, restarting loop...' % e)
+            time.sleep(1)
+            continue
+    p.close()
+
+if __name__ == '__main__':
+    # set IP address for ethernet test
+    try:
+        subprocess.check_call(["ifconfig", "eth0", "192.168.1.100", "up"])
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Failed setting IP address for eth0")
+
+    while 1:
+        try:
+            uboot_expect()
+        except KeyboardInterrupt:
+            print()
+            pass
+        except UnicodeDecodeError:
+            # we don't care about unicode decoding issues, e.g. if linux starts
+            # booting and dumps odd characters into the output stream
+            pass

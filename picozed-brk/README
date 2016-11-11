@@ -1,13 +1,14 @@
 Breakout board specific test suite.
 
-To create an SD card that autoruns the u-boot-based testsuite via a remote RPi
+To create an SD card that autoruns the U-Boot-based testsuite via a remote RPi
 at startup perform the following steps on an SD card with the lite version of
 this raspian image necessary to drive the connected LCD screen [1]:
 
   - Install picocom and the python2.7 packages for blessings, pyserial, and
-	pexpect. Note that some of those python packages might not be in the
-	available package repos so you'll have to bootstrap install pip and use
-	that to install the python packages.
+    pexpect. Note that some of those python packages might not be in the
+    available package repos so you'll have to bootstrap pip and use that to
+    install the python packages. To bootstrap pip use the get-pip.py script
+    and info at https://pip.pypa.io/en/stable/installing/.
 
   - Clone https://github.com/analogdevicesinc/board-tests.git into /home/pi.
 
@@ -20,7 +21,7 @@ this raspian image necessary to drive the connected LCD screen [1]:
 [1]: https://learn.adafruit.com/adafruit-2-2-pitft-hat-320-240-primary-display-for-raspberry-pi/easy-install
 
 
-To create an SD card that autoruns the old linux-based testsuite at startup
+To create an SD card that autoruns the old Linux-based testsuite at startup
 perform the following steps on an SD card with the ADI image on it:
 
   - Make sure to remove all gpio_keys mappings from the device tree in order

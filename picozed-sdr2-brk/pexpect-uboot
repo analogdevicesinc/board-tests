@@ -78,7 +78,8 @@ def gpib_get_freq(gpib_dev):
     s.flushInput()
     s.flushOutput()
 
-    # initialize GPIB adapter
+    # initialize GPIB adapter, assumes a GPIB address of 16 which has to be set
+    # specifically on the device
     _write('++mode 1\n')
     _write('++auto 1\n')
     _write('++addr 16\n')
@@ -91,7 +92,7 @@ def gpib_get_freq(gpib_dev):
     _write('*CLS;*RST;*IDN?\r\n')
     instrument_id = s.readline().strip()
     if not instrument_id:
-        raise GPIBError('error communicating with frequency counter')
+        raise GPIBError('incorrect GPIB address setting')
 
     # request the current measured frequency
     _write('*RST;*CLS;*SRE 0;*ESE 0;\r\n')

@@ -83,6 +83,13 @@ class UBootError(Exception):
     """Generic exception for errors when communicating with u-boot."""
 
 
+def display(color, text):
+    """Output black text on a given background color sized for the RPi screen shield."""
+    print(color + ' ' * 160 + term.normal)
+    print(term.black + color + text + term.normal)
+    print(color + ' ' * 160 + term.normal)
+
+
 def spawn_picocom(serial_dev):
     try:
         p = pexpect.spawnu('picocom --nolock -b 115200 %s' % (serial_dev,))
@@ -130,9 +137,7 @@ def uboot_expect():
             p.expect('Toggle the buttons')
             p.expect('The test will time out')
             time.sleep(0.5)
-            print(term.on_yellow + ' ' * 160 + term.normal)
-            print(term.black + term.on_yellow + BUTTON_STR.strip() + term.normal)
-            print(term.on_yellow + ' ' * 160 + term.normal)
+            display(term.on_yellow, BUTTON_STR.strip())
 
             i = p.expect(['U-Boot ', 'ALL TESTS PASSED', 'TESTS FAILED'], timeout=1800)
             if i == 0:
@@ -143,15 +148,11 @@ def uboot_expect():
                 # tests failed
                 p.expect('Hit any key')
                 time.sleep(0.5)
-                print(term.on_red + ' ' * 160 + term.normal)
-                print(term.black + term.on_red + FAIL_STR.strip() + term.normal)
-                print(term.on_red + ' ' * 160 + term.normal)
+                display(term.on_red, FAIL_STR.strip())
                 continue
 
             # tests passed
-            print(term.on_green + ' ' * 160 + term.normal)
-            print(term.black + term.on_green + PASS_STR.strip() + term.normal)
-            print(term.on_green + ' ' * 160 + term.normal)
+            display(term.on_green, PASS_STR.strip())
 
         except pexpect.TIMEOUT:
             if not timed_out:

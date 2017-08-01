@@ -250,7 +250,7 @@ def uboot_expect():
             except GPIBError as e:
                 print('\nError querying frequency counter: %s, restarting loop...' % (e,))
                 continue
-            p.sendline('setenv ad9361_ext_refclk 0x%x' % (freq,))
+            p.sendline('setenv ad9361_ext_refclk <0x%x>' % (freq,))
             p.expect(prompt)
             p.sendline('setenv model %s' % (MODEL,))
             p.expect(prompt)
